@@ -16,3 +16,4 @@ certs/
 serviceAccountKey.json
 
 venv
+venv310

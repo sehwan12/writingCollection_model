@@ -1,51 +1,53 @@
 # 실행할 서비스(컨테이너) 목록
 services:
-  # FastAPI 서버 컨테이너
-  fastapi:
-    # 사용할 Docker 이미지 (GitHub Actions가 .env 파일에 채워준 값을 사용)
-    image: ${DOCKER_IMAGE_NAME}:${IMAGE_TAG:-latest}
-    # 컨테이너가 항상 재시작되도록 설정
-    restart: always
-    # Nginx를 통해 외부와 통신하므로 FastAPI 포트는 외부에 노출하지 않음
-    # ports:
-    #   - "8000:8000"
-    # 의존성 설정: 'db' 컨테이너가 시작된 후에 실행
-    depends_on:
-      - db
-    # 데이터베이스 연결 정보 등 환경 변수 설정
-    environment:
-      # 호스트 주소를 'host.docker.internal' 대신 서비스 이름 'db'로 변경
-      # 사용자, 비밀번호, DB 이름은 .env 파일에서 값을 가져옴
-      - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+  # FastAPI 서버 컨테이너(로컬에서 직접 띄울 거라 주석 처리함)
+  # fastapi:
+  #   # 사용할 Docker 이미지 (GitHub Actions가 .env 파일에 채워준 값을 사용)
+  #   # image: ${DOCKER_IMAGE_NAME}:${IMAGE_TAG:-latest}
+  #   build: .
+  #   # 컨테이너가 항상 재시작되도록 설정
+  #   restart: always
+  #   # Nginx를 통해 외부와 통신하므로 FastAPI 포트는 외부에 노출하지 않음
+  #   ports:
+  #     - "8000:8000"
+  #   # 의존성 설정: 'db' 컨테이너가 시작된 후에 실행
+  #   depends_on:
+  #     - db
+  #   # 데이터베이스 연결 정보 등 환경 변수 설정
+  #   environment:
+  #     # 호스트 주소를 'host.docker.internal' 대신 서비스 이름 'db'로 변경
+  #     # 사용자, 비밀번호, DB 이름은 .env 파일에서 값을 가져옴
+  #     - DATABASE_URL=postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
 
-    # env_file: EC2 서버의 .env 파일을 컨테이너의 환경 변수로 주입합니다.
-    env_file:
-      - /home/ec2-user/writingCollection_model/.env
-    volumes:
-      # 호스트(EC2)의 ./serviceAccountKey.json 파일을
-      # 컨테이너의 /app/serviceAccountKey.json 파일로 연결합니다.
-      - ./serviceAccountKey.json:/app/serviceAccountKey.json
-      # 호스트(EC2)의 ./static 디렉터리를 컨테이너의 /app/static 디렉터리로 연결
-      - ./static:/app/static
+  #   # env_file: EC2 서버의 .env 파일을 컨테이너의 환경 변수로 주입합니다.
+  #   env_file:
+  #     # - /home/ec2-user/writingCollection_model/.env
+  #     - ./.env
+  #   volumes:
+  #     # 호스트(EC2)의 ./serviceAccountKey.json 파일을
+  #     # 컨테이너의 /app/serviceAccountKey.json 파일로 연결합니다.
+  #     - ./serviceAccountKey.json:/app/serviceAccountKey.json
+  #     # 호스트(EC2)의 ./static 디렉터리를 컨테이너의 /app/static 디렉터리로 연결
+  #     - ./static:/app/static
 
   # Nginx 컨테이너
-  nginx:
-    image: nginx:latest
-    restart: always
-    ports:
-      - "80:80" # 외부 80번 포트를 Nginx 80번 포트로 연결
-      - "443:443" # 외부 443번 포트를 Nginx 443번 포트로 연결 (HTTPS)
-    volumes:
-      # 로컬의 nginx.conf 파일을 컨테이너의 설정 파일 위치에 마운트
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      # 호스트(EC2)의 ./static 디렉터리를 컨테이너의 /app/static 디렉터리로 연결
-      - ./static:/app/static
-      # Nginx 로그를 호스트(EC2)에서 확인할 수 있도록 로그 디렉터리 마운트(로그를 보고 위험한 ip 차단 등 관리 목적)
-      - ./logs:/var/log/nginx
-      # SSL 인증서 디렉토리 마운트
-      - ./certs:/etc/nginx/certs
-    depends_on:
-      - fastapi
+  # nginx:
+  #   image: nginx:latest
+  #   restart: always
+  #   ports:
+  #     - "80:80" # 외부 80번 포트를 Nginx 80번 포트로 연결
+  #     - "443:443" # 외부 443번 포트를 Nginx 443번 포트로 연결 (HTTPS)
+  #   volumes:
+  #     # 로컬의 nginx.conf 파일을 컨테이너의 설정 파일 위치에 마운트
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  #     # 호스트(EC2)의 ./static 디렉터리를 컨테이너의 /app/static 디렉터리로 연결
+  #     - ./static:/app/static
+  #     # Nginx 로그를 호스트(EC2)에서 확인할 수 있도록 로그 디렉터리 마운트(로그를 보고 위험한 ip 차단 등 관리 목적)
+  #     - ./logs:/var/log/nginx
+  #     # SSL 인증서 디렉토리 마운트
+  #     - ./certs:/etc/nginx/certs
+  #   depends_on:
+  #     - fastapi
 
 
   # PostgreSQL 데이터베이스 컨테이너
@@ -58,12 +60,12 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
     ports: # 디버깅 목적으로 DB에 직접 접속해야 할 때만 주석 해제
-      - "5432:5432"
+      - "5435:5432"
     volumes:
       # 데이터베이스 데이터를 EC2 호스트에 영속적으로 저장하기 위한 볼륨
       - postgres_data:/var/lib/postgresql/data
-      - ./postgresql.conf.custom:/var/lib/postgresql/data/postgresql.conf
-      - ./pg_hba.conf.custom:/var/lib/postgresql/data/pg_hba.conf
+      # - ./postgresql.conf.custom:/var/lib/postgresql/data/postgresql.conf
+      # - ./pg_hba.conf.custom:/var/lib/postgresql/data/pg_hba.conf
 
 
 # 데이터 영속성을 위한 볼륨 정의

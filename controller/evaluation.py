@@ -22,7 +22,8 @@ async def evaluate_handwriting(payload: ResultCreate,  db: Session = Depends(get
         reader = easyocr.Reader(
             ['ko'],
             gpu=False,                     # GPU 대신 CPU만 사용
-            model_storage_directory='/home/ec2-user/.easyocr_cache',   # 모델 캐시 경로 변경
+            #model_storage_directory='/home/ec2-user/.easyocr_cache',   # 모델 캐시 경로 변경(AWS EC2용)
+            model_storage_directory='./.easyocr_cache',
             download_enabled=True,        # 불필요한 다운로드 방지
             verbose=False                  # 로깅 최소화
         )
